@@ -1,0 +1,32 @@
+services:
+  ehrdb:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ehrbase
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./db-data:/var/lib/postgresql/data
+      - ./init-db.sh/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
+
+  ehrbase:
+    image: ehrbase/ehrbase:latest
+    environment:
+      DB_URL: jdbc:postgresql://ehrdb:5432/ehrbase
+      DB_USER: postgres
+      DB_PASS: postgres
+      DB_USER_ADMIN: postgres
+      DB_PASS_ADMIN: postgres
+      SECURITY_AUTHADMINUSER: ehrbase-admin
+      SECURITY_AUTHADMINPASSWORD: SuperSecretAdminPassword
+      SECURITY_AUTHTYPE: BASIC
+      SECURITY_AUTHUSER: ehrbase-user
+      SECURITY_AUTHPASSWORD: SuperSecretPassword
+      ADMIN_API_ACTIVE: "true"
+      CORS_ENABLED: "true"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - ehrdb
