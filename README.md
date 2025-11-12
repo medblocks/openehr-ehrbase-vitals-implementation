@@ -1,12 +1,12 @@
-# OpenEHR Vitals - EHRbase Tutorial
+# openEHR Vitals - EHRbase Tutorial
 
-A complete tutorial for setting up and using EHRbase with OpenEHR to store and query patient vital signs data (Blood Pressure).
+A complete tutorial for setting up and using EHRbase with openEHR to store and query patient vital signs data (Blood Pressure).
 
 ## Overview
 
 This project demonstrates how to:
-- Set up EHRbase (OpenEHR clinical data repository) with PostgreSQL
-- Upload OpenEHR templates
+- Set up EHRbase (openEHR clinical data repository) with PostgreSQL
+- Upload openEHR templates
 - Create Electronic Health Records (EHRs)
 - Store vital signs data (Blood Pressure measurements)
 - Query clinical data using AQL (Archetype Query Language)
@@ -16,7 +16,7 @@ This project demonstrates how to:
 ```
 ┌─────────────────┐
 │   EHRbase API   │  Port 8080
-│  (OpenEHR CDR)  │
+│  (openEHR CDR)  │
 └────────┬────────┘
          │
          ▼
@@ -62,9 +62,9 @@ You should see both `ehrdb` and `ehrbase` containers running.
 ### 4. Import the Postman Assets
 
 - In Postman, click **Import → Files** and choose:
-  - `postman/OpenEHR Vitals Tutorial.postman_collection.json`
+  - `postman/openEHR Vitals Tutorial.postman_collection.json`
   - `postman/openEHR Local.postman_environment.json`
-- Select the `OpenEHR Local` environment and confirm the variables:
+- Select the `openEHR Local` environment and confirm the variables:
   - `base_url` should remain `http://localhost:8080/ehrbase/rest`.
   - Update `patient_id`, `composer_name`, and `measurement_time` if you want different defaults.
 
@@ -120,7 +120,7 @@ openerh-vitals/
 ├── init-db.sh/
 │   └── init-db.sh             # Database initialization script
 ├── templates/
-│   └── blood_pressure.opt     # Blood pressure OpenEHR template
+│   └── blood_pressure.opt     # Blood pressure openEHR template
 └── README.md                   # This file
 ```
 
