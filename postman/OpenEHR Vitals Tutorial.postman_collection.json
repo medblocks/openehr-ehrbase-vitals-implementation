@@ -1,8 +1,8 @@
 {
   "info": {
     "_postman_id": "f8c83d5d-30ec-45cd-83e8-7bad5f83fe7f",
-    "name": "OpenEHR Vitals Tutorial",
-    "description": "Postman collection that mirrors the OpenEHR Vitals tutorial workflow without requiring curl.",
+    "name": "openEHR Vitals Tutorial",
+    "description": "Postman collection that mirrors the openEHR Vitals tutorial workflow without requiring curl.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -354,4 +354,3 @@
     }
   ]
 }
-
