@@ -1,0 +1,356 @@
+{
+  "info": {
+    "_postman_id": "f8c83d5d-30ec-45cd-83e8-7bad5f83fe7f",
+    "name": "openEHR Vitals Tutorial",
+    "description": "Postman collection that mirrors the openEHR Vitals tutorial workflow without requiring curl.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "basic",
+    "basic": [
+      {
+        "key": "username",
+        "value": "{{user_user}}",
+        "type": "string"
+      },
+      {
+        "key": "password",
+        "value": "{{user_pass}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Check EHRbase Status",
+      "request": {
+        "auth": {
+          "type": "basic",
+          "basic": [
+            {
+              "key": "username",
+              "value": "{{admin_user}}",
+              "type": "string"
+            },
+            {
+              "key": "password",
+              "value": "{{admin_pass}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/status",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "status"
+          ]
+        },
+        "description": "Quick status check to confirm EHRbase is alive after docker-compose up."
+      },
+      "response": []
+    },
+    {
+      "name": "Upload Blood Pressure Template",
+      "request": {
+        "auth": {
+          "type": "basic",
+          "basic": [
+            {
+              "key": "username",
+              "value": "{{admin_user}}",
+              "type": "string"
+            },
+            {
+              "key": "password",
+              "value": "{{admin_pass}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/xml"
+          }
+        ],
+        "body": {
+          "mode": "file",
+          "file": {
+            "src": "templates/blood_pressure.opt"
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/openehr/v1/definition/template/adl1.4",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "openehr",
+            "v1",
+            "definition",
+            "template",
+            "adl1.4"
+          ]
+        },
+        "description": "Uploads the blood pressure template. Run once after starting services."
+      },
+      "response": []
+    },
+    {
+      "name": "List Templates",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "basic",
+          "basic": [
+            {
+              "key": "username",
+              "value": "{{admin_user}}",
+              "type": "string"
+            },
+            {
+              "key": "password",
+              "value": "{{admin_pass}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/openehr/v1/definition/template/adl1.4",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "openehr",
+            "v1",
+            "definition",
+            "template",
+            "adl1.4"
+          ]
+        },
+        "description": "Retrieves available templates; replaces jq-based curl commands."
+      },
+      "response": []
+    },
+    {
+      "name": "Create EHR",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"_type\": \"EHR_STATUS\",\n  \"archetype_node_id\": \"openEHR-EHR-EHR_STATUS.generic.v1\",\n  \"name\": {\n    \"value\": \"EHR Status\"\n  },\n  \"subject\": {\n    \"external_ref\": {\n      \"id\": {\n        \"_type\": \"GENERIC_ID\",\n        \"value\": \"{{patient_id}}\",\n        \"scheme\": \"id_scheme\"\n      },\n      \"namespace\": \"{{subject_namespace}}\",\n      \"type\": \"PERSON\"\n    }\n  },\n  \"is_modifiable\": true,\n  \"is_queryable\": true\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/openehr/v1/ehr",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "openehr",
+            "v1",
+            "ehr"
+          ]
+        },
+        "description": "Creates a new EHR for the subject. Copy the returned ehr_id or run the next request to capture it automatically."
+      },
+      "response": []
+    },
+    {
+      "name": "Find EHR by Subject",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "const body = pm.response.json();",
+              "if (body && body.ehr_id && body.ehr_id.value) {",
+              "    pm.environment.set(\"ehr_id\", body.ehr_id.value);",
+              "    console.log(\"Saved ehr_id to environment: \" + body.ehr_id.value);",
+              "} else {",
+              "    console.warn(\"ehr_id not found in response\");",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/openehr/v1/ehr?subject_id={{patient_id}}&subject_namespace={{subject_namespace}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "openehr",
+            "v1",
+            "ehr"
+          ],
+          "query": [
+            {
+              "key": "subject_id",
+              "value": "{{patient_id}}"
+            },
+            {
+              "key": "subject_namespace",
+              "value": "{{subject_namespace}}"
+            }
+          ]
+        },
+        "description": "Looks up an EHR by patient identifier and stores the ehr_id environment variable, replacing jq piping."
+      },
+      "response": []
+    },
+    {
+      "name": "Create Blood Pressure Measurement",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Prefer",
+            "value": "return=representation"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"blood_pressure/blood_pressure:0/any_event:0/systolic|magnitude\": 118,\n  \"blood_pressure/blood_pressure:0/any_event:0/systolic|unit\": \"mm[Hg]\",\n  \"blood_pressure/blood_pressure:0/any_event:0/diastolic|magnitude\": 76,\n  \"blood_pressure/blood_pressure:0/any_event:0/diastolic|unit\": \"mm[Hg]\",\n  \"blood_pressure/blood_pressure:0/any_event:0/time\": \"{{measurement_time}}\",\n  \"ctx/language\": \"en\",\n  \"ctx/territory\": \"US\",\n  \"ctx/composer_name\": \"{{composer_name}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/openehr/v1/ehr/{{ehr_id}}/composition?templateId=blood_pressure&format=FLAT",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "openehr",
+            "v1",
+            "ehr",
+            "{{ehr_id}}",
+            "composition"
+          ],
+          "query": [
+            {
+              "key": "templateId",
+              "value": "blood_pressure"
+            },
+            {
+              "key": "format",
+              "value": "FLAT"
+            }
+          ]
+        },
+        "description": "Creates a sample blood pressure measurement. Update measurement_time or composer_name as needed."
+      },
+      "response": []
+    },
+    {
+      "name": "Create High BP Measurement",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Prefer",
+            "value": "return=representation"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"blood_pressure/blood_pressure:0/any_event:0/systolic|magnitude\": 140,\n  \"blood_pressure/blood_pressure:0/any_event:0/systolic|unit\": \"mm[Hg]\",\n  \"blood_pressure/blood_pressure:0/any_event:0/diastolic|magnitude\": 90,\n  \"blood_pressure/blood_pressure:0/any_event:0/diastolic|unit\": \"mm[Hg]\",\n  \"blood_pressure/blood_pressure:0/any_event:0/time\": \"2025-11-08T10:30:00Z\",\n  \"ctx/language\": \"en\",\n  \"ctx/territory\": \"US\",\n  \"ctx/composer_name\": \"Dr. Smith\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/openehr/v1/ehr/{{ehr_id}}/composition?templateId=blood_pressure&format=FLAT",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "openehr",
+            "v1",
+            "ehr",
+            "{{ehr_id}}",
+            "composition"
+          ],
+          "query": [
+            {
+              "key": "templateId",
+              "value": "blood_pressure"
+            },
+            {
+              "key": "format",
+              "value": "FLAT"
+            }
+          ]
+        },
+        "description": "Variant measurement for 140/90 values, useful for testing query filters."
+      },
+      "response": []
+    },
+    {
+      "name": "AQL – All Blood Pressure Readings",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"q\": \"SELECT c/uid/value as composition_id, c/context/start_time as measurement_time, o/data[at0001]/events[at0006]/data[at0003]/items[at0004]/value/magnitude as systolic, o/data[at0001]/events[at0006]/data[at0003]/items[at0005]/value/magnitude as diastolic FROM EHR e CONTAINS COMPOSITION c CONTAINS OBSERVATION o[openEHR-EHR-OBSERVATION.blood_pressure.v2] WHERE e/ehr_id/value = '{{ehr_id}}'\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/openehr/v1/query/aql",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "openehr",
+            "v1",
+            "query",
+            "aql"
+          ]
+        },
+        "description": "Returns all blood pressure readings for the current EHR."
+      },
+      "response": []
+    }
+  ]
+}
