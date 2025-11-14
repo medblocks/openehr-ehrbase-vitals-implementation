@@ -43,15 +43,7 @@ This will start:
 - **PostgreSQL 14** on port 5432
 - **EHRbase** on port 8080
 
-### 2. Enable UUID Support in Postgres
-
-```bash
-docker exec ehrdb psql -U ehrbase -d ehrbase -c "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";"
-```
-
-This creates the `uuid_generate_v4()` function required by EHRbase migrations.
-
-### 3. Verify Services are Running
+### 2. Verify Services are Running
 
 ```bash
 docker ps
@@ -59,7 +51,7 @@ docker ps
 
 You should see both `ehrdb` and `ehrbase` containers running.
 
-### 4. Import the Postman Assets
+### 3. Import the Postman Assets
 
 - In Postman, click **Import → Files** and choose:
   - `postman/openEHR Vitals Tutorial.postman_collection.json`
@@ -68,20 +60,20 @@ You should see both `ehrdb` and `ehrbase` containers running.
   - `base_url` should remain `http://localhost:8080/ehrbase/rest`.
   - Update `patient_id`, `composer_name`, and `measurement_time` if you want different defaults.
 
-### 5. Check EHRbase Status
+### 4. Check EHRbase Status
 
 - Open the `Check EHRbase Status` request in the collection and press **Send**.
 - Expect a `200 OK` response confirming the server is healthy.
 
 ## Template Management
 
-### Upload the Blood Pressure Template
+### 1. Upload the Blood Pressure Template
 
 - Run `Upload Blood Pressure Template`.
 - Ensure the body points at `templates/blood_pressure.opt`. Postman will stream the file automatically.
 - Expect a `201 Created` or `204 No Content` response.
 
-### List Available Templates
+### 2. List Available Templates
 
 - Run `List Templates` to confirm the upload. A `200 OK` response with the template metadata indicates success.
 
@@ -94,7 +86,7 @@ Create an EHR for a patient without touching the CLI:
 
 ## Recording Vital Signs
 
-### Create a Blood Pressure Measurement
+### 1. Create a Blood Pressure Measurement
 
 - Run `Create Blood Pressure Measurement` to log a baseline reading. Variables such as `measurement_time` and `composer_name` come from the environment—change them there or edit the body before sending.
 - Run `Create High BP Measurement` for a 140/90 example. Feel free to duplicate and tailor additional scenarios.
@@ -117,10 +109,10 @@ The system uses HTTP Basic Authentication with two sets of credentials:
 ```
 openerh-vitals/
 ├── docker-compose.yml          # Docker services configuration
-├── init-db.sh/
-│   └── init-db.sh             # Database initialization script
+├── init.sql                    # Database initialization script
+├── postman                     # Postman requests
 ├── templates/
-│   └── blood_pressure.opt     # Blood pressure openEHR template
+│   └── blood_pressure.opt      # Blood pressure openEHR template
 └── README.md                   # This file
 ```
 
